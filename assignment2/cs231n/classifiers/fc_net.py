@@ -78,7 +78,7 @@ class FullyConnectedNet(object):
         for i in range(1, self.num_layers + 1):
             self.params[f'W{i}'] = np.random.randn(dims[i-1], dims[i]) * weight_scale
             self.params[f'b{i}'] = np.zeros(dims[i])
-        
+
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -151,7 +151,16 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        cache = [dict() for i in range(self.num_layers)]
+        s = X # s are scores after current layer
+        for i in range(self.num_layers):
+            s, cache[i]['affine'] = affine_forward(
+                s, self.params[f'W{i + 1}'], self.params[f'b{i + 1}'])
+            if i != self.num_layers - 1:
+                # Each affine layer except the last is followed by relu layer
+                s, cache[i]['relu'] = relu_forward(s)
+
+        scores = s
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -178,7 +187,18 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        loss, ds = softmax_loss(scores, y)
+        # ds is gradient of loss w.r.t. scores on current layer
+        loss += 0.5 * self.reg * sum(
+            [np.sum(self.params[f'W{i+1}']**2) 
+            for i in range(self.num_layers)]
+        ) # accounts for regularization
+
+        for i in range(self.num_layers)[::-1]:
+            if i != self.num_layers - 1:
+                ds = relu_backward(ds, cache[i]['relu'])
+            ds, grads[f'W{i+1}'], grads[f'b{i+1}'] = affine_backward(ds, cache[i]['affine'])
+            grads[f'W{i+1}'] += self.reg * self.params[f'W{i+1}'] # accounts for regularization
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
