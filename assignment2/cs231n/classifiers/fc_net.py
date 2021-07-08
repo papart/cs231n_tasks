@@ -74,8 +74,11 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
-
+        dims = [input_dim, *hidden_dims, num_classes]
+        for i in range(1, self.num_layers + 1):
+            self.params[f'W{i}'] = np.random.randn(dims[i-1], dims[i]) * weight_scale
+            self.params[f'b{i}'] = np.zeros(dims[i])
+        
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
