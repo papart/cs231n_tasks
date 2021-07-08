@@ -24,8 +24,8 @@ def affine_forward(x, w, b):
     # TODO: Copy over your solution from Assignment 1.                        #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
+    x_2d = x.reshape(x.shape[0], -1)
+    out = x_2d.dot(w) + b.reshape(1, -1)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -57,8 +57,12 @@ def affine_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    x_2d = x.reshape(x.shape[0], -1)
+    dw = x_2d.transpose().dot(dout)
+    dx = dout.dot(w.transpose())
+    dx = dx.reshape(x.shape)
+    db = dout.sum(axis=0)
+    
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -82,7 +86,7 @@ def relu_forward(x):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    out = (x > 0) * x
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -108,7 +112,7 @@ def relu_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    dx = dout * (x > 0)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -137,7 +141,17 @@ def softmax_loss(x, y):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_samples, num_classes = x.shape
+    scores = x.copy() # (N, C); x is already scores, not a raw input
+    scores -= scores.max(axis=1).reshape(-1, 1) # For better numerical stability
+    exp_scores = np.exp(scores)
+    exp_scores_sum = exp_scores.sum(axis=1)
+    P = exp_scores / exp_scores_sum.reshape(-1, 1)
+    Y = np.zeros_like(P)
+    Y[np.arange(num_samples), y] = 1
+
+    loss = -np.sum(np.log(P[np.arange(num_samples), y])) / num_samples
+    dx = (P - Y) / num_samples
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
